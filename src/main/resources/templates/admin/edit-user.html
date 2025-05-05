@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактировать пользователя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        form div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 300px;
+            padding: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #ffc107;
+            color: black;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #e0a800;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<h1>Редактировать пользователя</h1>
+
+<form th:action="@{/admin/users/{email}(email=${user.email})}" method="post">
+    <input type="hidden" name="id" th:value="${user.id}" />
+
+    <div>
+        <label>Имя:</label>
+        <input type="text" name="firstName" th:value="${user.firstName}" required />
+    </div>
+
+    <div>
+        <label>Фамилия:</label>
+        <input type="text" name="lastName" th:value="${user.lastName}" required />
+    </div>
+
+    <div>
+        <label>Email:</label>
+        <input type="email" name="email" th:value="${user.email}" required />
+    </div>
+
+    <div>
+        <label>Новый пароль:</label>
+        <input type="password" name="password" placeholder="Оставьте пустым, чтобы не менять" />
+    </div>
+
+    <div>
+        <label>Роли:</label>
+        <div th:each="role : ${roles}">
+            <input type="checkbox" name="roleIds" th:value="${role.id}"
+                   th:checked="${user.roles.contains(role)}" />
+            <label th:text="${role.name}"></label>
+        </div>
+    </div>
+
+    <button type="submit">Сохранить</button>
+</form>
+
+<a href="/admin/users">Назад к списку</a>
+</body>
+</html>

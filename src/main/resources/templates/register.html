@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Регистрация</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .registration-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .roles {
+            margin-top: 10px;
+        }
+        .roles label {
+            display: inline;
+            margin-left: 5px;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        button {
+            width: 100%;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div class="registration-form">
+    <h2>Регистрация</h2>
+
+    <div class="error" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/registration}" method="post" th:object="${user}">
+
+        <label>Имя:</label>
+        <input type="text" th:field="*{firstName}" required/>
+
+        <label>Фамилия:</label>
+        <input type="text" th:field="*{lastName}" required/>
+
+        <label>Email:</label>
+        <input type="email" th:field="*{email}" required/>
+
+        <label>Пароль:</label>
+        <input type="password" th:field="*{password}" required/>
+
+        <div class="roles">
+            <label>Роли:</label>
+            <div th:each="role : ${roles}">
+                <input type="checkbox" th:value="${role.id}" th:name="roleIds" />
+                <label th:text="${role.name}"></label><br/>
+            </div>
+        </div>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+</div>
+</body>
+</html>
