@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 40px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info p {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #34495e;
+        }
+
+        .info strong {
+            display: inline-block;
+            width: 100px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button-container button,
+        .button-container a {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button-container button:hover,
+        .button-container a:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Личный кабинет</h1>
+
+<div class="container">
+
+    <div class="info">
+        <p><strong>Имя:</strong> <span th:text="${user.firstName}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    </div>
+
+    <div class="button-container">
+        <sec:authorize access="isAuthenticated()">
+            <form action="/logout" method="POST" style="display:inline;">
+                <button type="submit">Выйти</button>
+            </form>
+        </sec:authorize>
+    </div>
+    <div class="button-container">
+        <div sec:authorize="hasRole('ROLE_ADMIN')">
+            <a href="/admin">Перейти в админку</a>
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+</html>
