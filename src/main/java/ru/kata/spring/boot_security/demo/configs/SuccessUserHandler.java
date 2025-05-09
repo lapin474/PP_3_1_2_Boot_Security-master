@@ -20,7 +20,11 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
-        response.sendRedirect("/users");
+        if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            response.sendRedirect("/admin"); // админская панель
+        } else {
+            response.sendRedirect("/users");  // личный кабинет обычного пользователя
+        }
 
     }
 }

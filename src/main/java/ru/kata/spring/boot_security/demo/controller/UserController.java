@@ -123,8 +123,8 @@ public class UserController {
 
     // Удаление пользователя
     @GetMapping("/delete")
-    public String deleteUser(@RequestParam("id") String email) {
-        userService.deleteUserByEmail(email);
+    public String deleteUser(@RequestParam("id") long id) {
+        userService.deleteUserById(id);
         return "redirect:/users";
     }
 

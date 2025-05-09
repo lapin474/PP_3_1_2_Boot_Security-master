@@ -10,14 +10,14 @@ public interface UserService {
 
     void saveUser(User user);
 
-    void deleteUserByEmail(String email);
-
-    void updateUser(Long id, User updatedUser);
+    public void updateUser(Long id, User updatedUser, List<Long> roleIds);
 
     User showUser(Long id);
 
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    void deleteUserById(Long id);
 
 }
