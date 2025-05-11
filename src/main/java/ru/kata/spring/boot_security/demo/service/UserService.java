@@ -20,4 +20,8 @@ public interface UserService {
 
     boolean existsByEmail(String email);
 
+    void createUser(User user, List<Long> roleIds);
+    void updateUser(String email, String firstName, String lastName, String newEmail, String password, List<Long> roleIds);
+    void updateUser(Long id, User updatedUser, List<Long> roleIds);
+
 }

@@ -26,15 +26,14 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    @Column(name = "password")
+    private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
-
-    @Column(name = "password")
-    private String password;
 
     public User() {
         // Пустой конструктор обязателен для JPA
@@ -47,7 +46,6 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-
     // Геттеры и сеттеры
 
     public Long getId() {
@@ -55,7 +53,7 @@ public class User implements UserDetails {
     }
 
     public void setId(Long id) {
-        this.id = id; // Можно оставить пустым если id сетить вручную не будешь
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -82,18 +80,13 @@ public class User implements UserDetails {
         this.email = email;
     }
 
-    public Set<Role> getRoles() {return roles;}
-
-    public void setRoles(Set<Role> roles) {this.roles = roles;}
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role.getName()))  // правильный вариант
-                .collect(Collectors.toSet());
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 
     public void setPassword(String password) {
         this.password = password;
@@ -107,6 +100,13 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toSet());
     }
 
     @Override

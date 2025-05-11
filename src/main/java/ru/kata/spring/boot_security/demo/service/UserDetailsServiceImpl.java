@@ -2,6 +2,7 @@ package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
-
     @Override
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // Ищем пользователя по email
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь с email " + username + " не найден"));
+
+        // Проверка, если пользователь заблокирован (например, можно добавить поле `isBlocked`)
+        if (!user.isEnabled()) {
+            throw new UsernameNotFoundException("Пользователь с email " + username + " заблокирован");
+        }
 
         // Явно преобразуем роли в SimpleGrantedAuthority
         List<GrantedAuthority> authorities = user.getRoles().stream()
@@ -40,5 +47,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 authorities
         );
     }
-
 }
