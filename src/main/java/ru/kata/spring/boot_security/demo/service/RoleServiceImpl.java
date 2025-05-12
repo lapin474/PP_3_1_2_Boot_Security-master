@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.service;
 
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +24,19 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
+    @Transactional
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
     }
 
     @Override
+    @Transactional
     public Role getRoleByName(String name) {
         return roleRepository.findByName(name);
     }
 
     @Override
+    @Transactional
     public Set<Role> getRolesByIds(List<Long> roleIds) {
         // Загружаем все роли по ID
         Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
@@ -50,7 +54,4 @@ public class RoleServiceImpl implements RoleService {
 
         return roles; // Возвращаем множество ролей
     }
-
-
-
 }

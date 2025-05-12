@@ -1,8 +1,10 @@
 package ru.kata.spring.boot_security.demo.service;
 
+import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
@@ -10,7 +12,7 @@ public interface UserService {
 
     void saveUser(User user);
 
-    public void updateUser(Long id, User updatedUser, List<Long> roleIds);
+    void updateUser(Long id, User updatedUser, List<Long> roleIds);
 
     User showUser(Long id);
 
@@ -20,4 +22,12 @@ public interface UserService {
 
     void deleteUserById(Long id);
 
+    void createUser(User user, List<Long> roleIds);
+
+    void updateUser(User user, List<Long> roleIds);
+
+    void updateUser(String email, String firstName, String lastName, String newEmail, String password, List<Long> roleIds);
+
+    Map<String, Object> getUserPageAttributes(String email);
+    List<Role> getAllRoles();
 }
