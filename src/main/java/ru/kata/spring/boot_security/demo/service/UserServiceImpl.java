@@ -1,5 +1,8 @@
 package ru.kata.spring.boot_security.demo.service;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
@@ -16,14 +19,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           RoleService roleService) {
+                           RoleService roleService, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleService = roleService;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
     @Override
@@ -52,32 +57,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь с таким email не найден: " + email));
         userRepository.delete(user);
-    }
-
-    @Override
-    @Transactional
-    public void updateUser(Long id, User updatedUser) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
-
-        if (!existingUser.getEmail().equals(updatedUser.getEmail()) &&
-                userRepository.existsByEmail(updatedUser.getEmail())) {
-            throw new IllegalArgumentException("Email уже используется другим пользователем");
-        }
-
-        existingUser.setFirstName(updatedUser.getFirstName());
-        existingUser.setLastName(updatedUser.getLastName());
-        existingUser.setEmail(updatedUser.getEmail());
-
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-        }
-
-        if (updatedUser.getRoles() != null && !updatedUser.getRoles().isEmpty()) {
-            existingUser.setRoles(updatedUser.getRoles());
-        }
-
-        userRepository.save(existingUser);
     }
 
     @Override
@@ -155,4 +134,37 @@ public class UserServiceImpl implements UserService {
         existingUser.setRoles(roleService.getRolesByIds(roleIds));
         userRepository.save(existingUser);
     }
+    @Override
+    public boolean userExistsByEmail(String email) {
+        return findByEmail(email).isPresent();
+    }
+
+    @Override
+    public User registerUser(User user, List<Long> roleIds) {
+        if (userExistsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Пользователь с таким email уже существует");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(roleService.getRolesByIds(roleIds));
+        saveUser(user);
+
+        return user;
+    }
+
+    @Override
+    public void autoAuthenticateUser(User user) {
+        UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(user.getEmail());
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+    @Override
+    public String getRedirectPathByRole(User user) {
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+        return isAdmin ? "redirect:/admin" : "redirect:/users";
+    }
+
 }

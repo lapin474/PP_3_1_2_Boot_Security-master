@@ -12,7 +12,6 @@ public interface UserService {
 
     void deleteUserByEmail(String email);
 
-    void updateUser(Long id, User updatedUser);
 
     User showUser(Long id);
 
@@ -23,5 +22,8 @@ public interface UserService {
     void createUser(User user, List<Long> roleIds);
     void updateUser(String email, String firstName, String lastName, String newEmail, String password, List<Long> roleIds);
     void updateUser(Long id, User updatedUser, List<Long> roleIds);
-
+    boolean userExistsByEmail(String email);
+    User registerUser(User user, List<Long> roleIds);
+    void autoAuthenticateUser(User user);
+    String getRedirectPathByRole(User user);
 }
