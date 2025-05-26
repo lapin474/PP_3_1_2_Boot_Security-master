@@ -46,31 +46,17 @@ public class RegistrationController {
     public String registerUser(@ModelAttribute User user,
                                @RequestParam List<Long> roleIds,
                                Model model) {
-        // Проверка на существование пользователя с таким email
-        if (userService.findByEmail(user.getEmail()).isPresent()) {
-            model.addAttribute("error", "Пользователь с таким email уже существует");
+        try {
+            User savedUser = userService.registerUser(user, roleIds);
+            userService.autoAuthenticateUser(savedUser);
+            return userService.getRedirectPathByRole(savedUser);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
             model.addAttribute("roles", roleService.getAllRoles());
-            return "register";  // Возвращаем форму регистрации с сообщением об ошибке
+            return "register";
         }
-
-        // Шифруем пароль перед сохранением
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword); // Устанавливаем зашифрованный пароль
-
-        System.out.println("Encoded password: " + encodedPassword);  // Для отладки
-
-        // Устанавливаем роли пользователя
-        user.setRoles(roleService.getRolesByIds(roleIds));
-
-        // Сохраняем пользователя
-        userService.saveUser(user);
-
-        // Ручная аутентификация
-        authenticateUser(user);
-
-        // Переход на страницу в зависимости от роли
-        return redirectToHomePage(user);
     }
+
 
     private void authenticateUser(User user) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());

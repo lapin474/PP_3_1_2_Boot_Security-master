@@ -33,52 +33,52 @@ public class UserController {
         model.addAllAttributes(attributes);
         return "user";
     }
-
-    // Форма для редактирования пользователя
-    @GetMapping("/new")
-    public String newUserForm(Model model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("allRoles", userService.getAllRoles());
-        return "user-form";
-    }
-
-    @GetMapping("/edit")
-    public String editUserForm(@RequestParam("id") Long id, Model model) {
-        model.addAttribute("user", userService.showUser(id));
-        model.addAttribute("allRoles", userService.getAllRoles());
-        return "user-form";
-    }
-
-    @PostMapping("/create")
-    public String saveUser(@ModelAttribute User user, @RequestParam("roleIds") List<Long> roleIds, Model model) {
-        try {
-            userService.createUser(user, roleIds);
-            return "redirect:/users";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("allRoles", userService.getAllRoles());
-            return "user-form";
-        }
-    }
-
-    @PostMapping("/update")
-    public String updateUser(@ModelAttribute User user, @RequestParam("roleIds") List<Long> roleIds, Model model) {
-        try {
-            userService.updateUser(user, roleIds);
-            return "redirect:/users";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("user", user);
-            model.addAttribute("allRoles", userService.getAllRoles());
-            return "user-form";
-        }
-    }
-
-    // Удаление пользователя
-    @GetMapping("/delete")
-    public String deleteUser(@RequestParam("id") long id) {
-        userService.deleteUserById(id);
-        return "redirect:/users";
-    }
+//
+//    // Форма для редактирования пользователя
+//    @GetMapping("/new")
+//    public String newUserForm(Model model) {
+//        model.addAttribute("user", new User());
+//        model.addAttribute("allRoles", userService.getAllRoles());
+//        return "user-form";
+//    }
+//
+//    @GetMapping("/edit")
+//    public String editUserForm(@RequestParam("id") Long id, Model model) {
+//        model.addAttribute("user", userService.showUser(id));
+//        model.addAttribute("allRoles", userService.getAllRoles());
+//        return "user-form";
+//    }
+//
+//    @PostMapping("/create")
+//    public String saveUser(@ModelAttribute User user, @RequestParam("roleIds") List<Long> roleIds, Model model) {
+//        try {
+//            userService.createUser(user, roleIds);
+//            return "redirect:/users";
+//        } catch (IllegalArgumentException e) {
+//            model.addAttribute("error", e.getMessage());
+//            model.addAttribute("allRoles", userService.getAllRoles());
+//            return "user-form";
+//        }
+//    }
+//
+//    @PostMapping("/update")
+//    public String updateUser(@ModelAttribute User user, @RequestParam("roleIds") List<Long> roleIds, Model model) {
+//        try {
+//            userService.updateUser(user, roleIds);
+//            return "redirect:/users";
+//        } catch (IllegalArgumentException e) {
+//            model.addAttribute("error", e.getMessage());
+//            model.addAttribute("user", user);
+//            model.addAttribute("allRoles", userService.getAllRoles());
+//            return "user-form";
+//        }
+//    }
+//
+//    // Удаление пользователя
+//    @GetMapping("/delete")
+//    public String deleteUser(@RequestParam("id") long id) {
+//        userService.deleteUserById(id);
+//        return "redirect:/users";
+//    }
 
 }
