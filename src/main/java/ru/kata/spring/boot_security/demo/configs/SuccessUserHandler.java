@@ -17,14 +17,7 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-
-        if (authorities.stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            response.sendRedirect("/admin"); // админская панель
-        } else {
-            response.sendRedirect("/users");  // личный кабинет обычного пользователя
-        }
-
+        response.sendRedirect("/");
     }
 }

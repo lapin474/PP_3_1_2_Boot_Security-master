@@ -8,26 +8,27 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
+
     List<User> getAllUsers();
 
-    void saveUser(User user);
+    User getUserById(Long id);
+    List<User> findAll();
 
-    void updateUser(Long id, User updatedUser, List<Long> roleIds);
+    User saveUser(User user);
+    User saveUser(User user, List<Long> roleIds);
 
-    User showUser(Long id);
+    User createUser(User user);
+    User createUser(User user, List<Long> roleIds);
+    User updateUser(String email, String firstName, String lastName, String newEmail,
+                    String password, List<Long> roleIds);
+    User updateUser(Long id, User user);
+    User updateUser(Long id, User updatedUser, List<Long> roleIds);
+    void deleteUserById(Long id);
 
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
-
-    void deleteUserById(Long id);
-
-    void createUser(User user, List<Long> roleIds);
-
-    void updateUser(User user, List<Long> roleIds);
-
-    void updateUser(String email, String firstName, String lastName, String newEmail, String password, List<Long> roleIds);
-
+    User showUser(Long id);
     Map<String, Object> getUserPageAttributes(String email);
     List<Role> getAllRoles();
 }

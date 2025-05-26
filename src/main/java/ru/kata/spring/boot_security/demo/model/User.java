@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,6 +28,7 @@ public class User implements UserDetails {
     private String email;
 
     @Column(name = "password")
+    @JsonIgnore
     private String password;
 
     // Связи указываем после простых полей

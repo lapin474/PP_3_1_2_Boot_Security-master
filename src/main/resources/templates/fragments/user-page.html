@@ -1,0 +1,32 @@
+<!-- templates/fragments/user-page.html -->
+<div th:fragment="userContent">
+    <div class="col-md-10 p-4" id="user-info-container" data-page="user">
+        <h2 class="mb-4">User information-page</h2>
+        <div class="card">
+            <div class="card-header bg-light">About user</div>
+            <div class="card-body p-0">
+                <table class="table table-borderless mb-0 text-center align-middle">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="table-secondary">
+                        <td id="user-id">–</td>
+                        <td id="user-firstname">–</td>
+                        <td id="user-lastname">–</td>
+                        <td id="user-email">–</td>
+                        <td id="user-roles">–</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

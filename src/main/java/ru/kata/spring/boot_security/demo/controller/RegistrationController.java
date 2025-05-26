@@ -4,14 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
-import ru.kata.spring.boot_security.demo.service.UserDetailsServiceImpl;
 import ru.kata.spring.boot_security.demo.service.UserService;
-import org.springframework.security.crypto.password.PasswordEncoder; // Импортируем
 
 import java.util.List;
 
@@ -20,17 +20,18 @@ public class RegistrationController {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final UserDetailsServiceImpl userDetailsService;
-    private final PasswordEncoder passwordEncoder; // Добавляем поле для PasswordEncoder
+    private final UserDetailsService userDetailsService; // Используем общий интерфейс
+    private final PasswordEncoder passwordEncoder;
 
-    // Внедряем зависимость через конструктор
     @Autowired
-    public RegistrationController(UserService userService, RoleService roleService,
-                                  UserDetailsServiceImpl userDetailsService, PasswordEncoder passwordEncoder) {
+    public RegistrationController(UserService userService,
+                                  RoleService roleService,
+                                  UserDetailsService userDetailsService, // Интерфейс вместо реализации
+                                  PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.roleService = roleService;
         this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder; // Инициализируем
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Открытие формы регистрации
@@ -46,20 +47,19 @@ public class RegistrationController {
     public String registerUser(@ModelAttribute User user,
                                @RequestParam List<Long> roleIds,
                                Model model) {
-        // Проверка на существование пользователя с таким email
+
+        // Проверка: существует ли уже пользователь с таким email
         if (userService.findByEmail(user.getEmail()).isPresent()) {
             model.addAttribute("error", "Пользователь с таким email уже существует");
             model.addAttribute("roles", roleService.getAllRoles());
-            return "register";  // Возвращаем форму регистрации с сообщением об ошибке
+            return "register";
         }
 
-        // Шифруем пароль перед сохранением
+        // Шифруем пароль
         String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword); // Устанавливаем зашифрованный пароль
+        user.setPassword(encodedPassword);
 
-        System.out.println("Encoded password: " + encodedPassword);  // Для отладки
-
-        // Устанавливаем роли пользователя
+        // Устанавливаем роли
         user.setRoles(roleService.getRolesByIds(roleIds));
 
         // Сохраняем пользователя
@@ -68,7 +68,7 @@ public class RegistrationController {
         // Ручная аутентификация
         authenticateUser(user);
 
-        // Переход на страницу в зависимости от роли
+        // Перенаправление (можно кастомизировать)
         return redirectToHomePage(user);
     }
 
@@ -80,10 +80,7 @@ public class RegistrationController {
     }
 
     private String redirectToHomePage(User user) {
-        if (user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"))) {
-            return "redirect:/admin";
-        } else {
-            return "redirect:/users";
-        }
+        // Тут можно реализовать логику в зависимости от ролей
+        return "login"; // Или "redirect:/admin", "redirect:/user", и т.д.
     }
 }

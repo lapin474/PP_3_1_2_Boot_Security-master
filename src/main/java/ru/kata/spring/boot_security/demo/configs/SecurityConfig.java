@@ -3,26 +3,27 @@ package ru.kata.spring.boot_security.demo.configs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-
+import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepository;
     private final AuthenticationSuccessHandler successHandler;
 
-    public SecurityConfig(UserDetailsService userDetailsService, AuthenticationSuccessHandler successHandler) {
-        this.userDetailsService = userDetailsService;
+    public SecurityConfig(UserRepository userRepository, AuthenticationSuccessHandler successHandler) {
+        this.userRepository = userRepository;
         this.successHandler = successHandler;
     }
 
@@ -33,13 +34,14 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index", "/registration/**", "/login", "/error").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/users/user").authenticated()  // ✅ ДОБАВЛЕНО: доступ к /api/user только для авторизованных
+                        .anyRequest().permitAll() // можно заменить на `.authenticated()` если нужно защищать всё остальное
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/process_login") // URL для обработки логина
-                        .successHandler(successHandler) // Если вход успешен
-                        .failureUrl("/login?error") // Если вход не удался
+                        .loginProcessingUrl("/process_login")
+                        .successHandler(successHandler)
+                        .failureUrl("/login?error")
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -51,6 +53,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -60,10 +69,7 @@ public class SecurityConfig {
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService);
+        provider.setUserDetailsService(userDetailsService());
         return provider;
     }
-
-
-
 }
