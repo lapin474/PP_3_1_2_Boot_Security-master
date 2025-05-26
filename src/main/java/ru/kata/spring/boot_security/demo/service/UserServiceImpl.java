@@ -1,6 +1,8 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.kata.spring.boot_security.demo.model.Role;
@@ -24,15 +26,6 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleService = roleService;
-    }
-    @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-    @Override
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
     }
 
     @Override
@@ -102,35 +95,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-
-    @Override
-    @Transactional
-    public User updateUser(String email, String firstName, String lastName, String newEmail,
-                           String password, List<Long> roleIds) {
-        User existingUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с email " + email + " не найден"));
-
-        // Проверка на уникальность нового email
-        if (!existingUser.getEmail().equals(newEmail)) {
-            checkEmailUniqueness(newEmail);  // Проверяем, что новый email уникален
-        }
-
-        // Обновляем данные пользователя
-        existingUser.setFirstName(firstName);
-        existingUser.setLastName(lastName);
-        existingUser.setEmail(newEmail);
-
-        // Если пароль был передан, шифруем его
-        if (password != null && !password.isBlank()) {
-            existingUser.setPassword(passwordEncoder.encode(password));
-        }
-
-        // Обновляем роли пользователя
-        existingUser.setRoles(roleService.getRolesByIds(roleIds));
-
-        return userRepository.save(existingUser);  // Сохраняем обновленного пользователя
-    }
-
     @Override
     @Transactional
     public User updateUser(Long id, User updatedUser, List<Long> roleIds) {
@@ -160,36 +124,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateUser(Long id, User updatedUser) {
-        User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
-
-        // Проверка на уникальность email
-        if (!existingUser.getEmail().equals(updatedUser.getEmail())) {
-            checkEmailUniqueness(updatedUser.getEmail());
-        }
-
-        // Обновление данных пользователя
-        existingUser.setFirstName(updatedUser.getFirstName());
-        existingUser.setLastName(updatedUser.getLastName());
-        existingUser.setEmail(updatedUser.getEmail());
-
-        // Если пароль изменен, шифруем его
-        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
-            existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-        }
-
-        // Устанавливаем роли
-        existingUser.setRoles(roleService.getRolesByIds(updatedUser.getRoles().stream()
-                .map(Role::getId)
-                .toList()));  // Преобразуем роли в список их ID
-
-        return userRepository.save(existingUser);  // Сохраняем обновленного пользователя
-    }
-
-
-    @Override
-    @Transactional
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);  // Удаляем пользователя по ID
     }
@@ -199,41 +133,10 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();  // Получаем всех пользователей
     }
 
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);  // Проверка существования пользователя с таким email
-    }
-
     @Override
     public User showUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
-    }
-
-    @Override
-    public Map<String, Object> getUserPageAttributes(String email) {
-        User user = findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + email));
-
-        List<User> users = getAllUsers();
-        boolean isAdmin = user.getRoles().stream()
-                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
-
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("user", user);
-        attributes.put("users", users);
-        attributes.put("isAdmin", isAdmin);
-        return attributes;
-    }
-    @Override
-    @Transactional
-    public User createUser(User user) {
-        // Шифруем пароль перед сохранением пользователя
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Сохраняем пользователя в репозитории
-        return userRepository.save(user);
     }
 
     @Override
@@ -246,4 +149,38 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Пользователь с таким email уже существует");
         }
     }
+
+    @Override
+    public boolean userExistsByEmail(String email) {
+        return findByEmail(email).isPresent();
+    }
+
+    @Override
+    public User registerUser(User user, List<Long> roleIds) {
+        if (userExistsByEmail(user.getEmail())) {
+            throw new IllegalArgumentException("Пользователь с таким email уже существует");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(roleService.getRolesByIds(roleIds));
+        saveUser(user);
+
+        return user;
+    }
+
+    @Override
+    public void autoAuthenticateUser(User user) {
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+
+
+    @Override
+    public String getRedirectPathByRole(User user) {
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_ADMIN"));
+        return isAdmin ? "redirect:/admin" : "redirect:/users";
+    }
+
 }

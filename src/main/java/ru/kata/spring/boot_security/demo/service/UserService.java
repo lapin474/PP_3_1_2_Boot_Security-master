@@ -11,24 +11,27 @@ public interface UserService {
 
     List<User> getAllUsers();
 
-    User getUserById(Long id);
-    List<User> findAll();
-
     User saveUser(User user);
+
     User saveUser(User user, List<Long> roleIds);
 
-    User createUser(User user);
     User createUser(User user, List<Long> roleIds);
-    User updateUser(String email, String firstName, String lastName, String newEmail,
-                    String password, List<Long> roleIds);
-    User updateUser(Long id, User user);
+
     User updateUser(Long id, User updatedUser, List<Long> roleIds);
+
     void deleteUserById(Long id);
 
     Optional<User> findByEmail(String email);
 
-    boolean existsByEmail(String email);
     User showUser(Long id);
-    Map<String, Object> getUserPageAttributes(String email);
+
     List<Role> getAllRoles();
+
+    boolean userExistsByEmail(String email);
+
+    User registerUser(User user, List<Long> roleIds);
+
+    void autoAuthenticateUser(User user);
+
+    String getRedirectPathByRole(User user);
 }
