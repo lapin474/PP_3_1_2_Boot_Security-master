@@ -7,12 +7,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-
 import java.io.IOException;
 import java.util.Collection;
 
 @Component
 public class SuccessUserHandler implements AuthenticationSuccessHandler {
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -20,7 +20,15 @@ public class SuccessUserHandler implements AuthenticationSuccessHandler {
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
-        response.sendRedirect("/users");
+        for (GrantedAuthority authority : authorities) {
+            String role = authority.getAuthority();
+            if (role.equals("ROLE_ADMIN")) {
+                response.sendRedirect("/admin");
+                return;
+            }
+        }
 
+        // Если не админ — редирект на /users
+        response.sendRedirect("/users");
     }
 }

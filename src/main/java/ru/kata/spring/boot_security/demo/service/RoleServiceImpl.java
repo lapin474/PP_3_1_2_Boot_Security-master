@@ -27,12 +27,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @Transactional(readOnly = true) // Чтение данных
-    public Role getRoleByName(String name) {
-        return roleRepository.findByName(name);
-    }
-
-    @Override
     @Transactional
     public Set<Role> getRolesByIds(List<Long> roleIds) {
         // Загружаем все роли по ID

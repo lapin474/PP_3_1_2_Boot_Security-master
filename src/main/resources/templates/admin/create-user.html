@@ -47,6 +47,11 @@
     </div>
 
     <div>
+        <label for="lastName">Фамилия</label>
+        <input type="text" id="lastName" th:field="*{lastName}" placeholder="Введите фамилию" required>
+    </div>
+
+    <div>
         <label for="email">Email</label>
         <input type="email" id="email" th:field="*{email}" placeholder="Введите email" required>
     </div>
@@ -57,12 +62,15 @@
     </div>
 
     <div>
-        <label>Роли</label>
-        <select name="roleIds" multiple required>
-            <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}"></option>
-        </select>
-
+        <label>Роли:</label>
+        <div th:each="role : ${roles}">
+            <input type="checkbox" name="roleIds" th:value="${role.id}"
+                   th:checked="${user.roles.contains(role)}" />
+            <label th:text="${role.name}"></label>
+        </div>
     </div>
+
+
 
     <div>
         <button type="submit">Создать</button>

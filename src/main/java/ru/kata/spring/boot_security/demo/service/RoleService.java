@@ -7,6 +7,5 @@ import java.util.Set;
 
 public interface RoleService {
     List<Role> getAllRoles();
-    Role getRoleByName(String name);
     Set<Role> getRolesByIds(List<Long> roleIds); // добавленный метод
 }

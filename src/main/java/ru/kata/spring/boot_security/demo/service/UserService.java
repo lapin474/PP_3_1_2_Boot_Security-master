@@ -12,9 +12,6 @@ public interface UserService {
 
     void deleteUserByEmail(String email);
 
-
-    User showUser(Long id);
-
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

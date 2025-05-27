@@ -61,13 +61,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public User showUser(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь с ID " + id + " не найден"));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
