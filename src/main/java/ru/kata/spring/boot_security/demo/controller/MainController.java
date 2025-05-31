@@ -85,9 +85,27 @@ public class MainController {
     @PostMapping("/users/update")
     public String updateUser(@ModelAttribute User user,
                              @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
-    userService.updateUser(user.getId(), user, roleIds);
-    return "redirect:/";
+
+        User existingUser = userService.findByEmail(user.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+
+        // Если роли не выбраны — используем текущие
+        if (roleIds == null || roleIds.isEmpty()) {
+            roleIds = existingUser.getRoles().stream()
+                    .map(Role::getId)
+                    .toList();
+        }
+
+        // Если пароль пустой — оставить старый
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            user.setPassword(existingUser.getPassword());
+        }
+
+        userService.updateUser(user.getId(), user, roleIds);
+        return "redirect:/";
     }
+
+
     @PostMapping("/users/create")
     public String createUser(@ModelAttribute User user,
                              @RequestParam(value = "roleIds", required = false) List<Long> roleIds,

@@ -283,10 +283,26 @@ async function deleteUser(id) {
     }
 }
 
-function submitEdit(event, id) {
+async function submitEdit(event, id) {
     event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
+
+    let roleIds = Array.from(form.querySelector('[name="roleIds"]').selectedOptions).map(opt => +opt.value);
+
+    // 🛡️ Защита от удаления всех ролей
+    if (roleIds.length === 0) {
+        try {
+            const res = await fetch(`/api/users/${id}`);
+            if (!res.ok) throw new Error('Не удалось загрузить пользователя');
+            const userData = await res.json();
+            roleIds = userData.roles.map(role => role.id); // используем текущие роли
+        } catch (e) {
+            console.error("Ошибка при получении текущих ролей пользователя:", e);
+            alert("Невозможно сохранить без ролей. Назначьте хотя бы одну.");
+            return;
+        }
+    }
 
     const user = {
         id: id,
@@ -294,27 +310,32 @@ function submitEdit(event, id) {
         lastName: formData.get("lastName"),
         email: formData.get("email"),
         password: formData.get("password") || null,
-        roleIds: Array.from(form.querySelector('[name="roleIds"]').selectedOptions).map(opt => +opt.value)
+        roleIds: roleIds
     };
 
-    fetch(`/api/users/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('[name="_csrf"]').value
-        },
-        body: JSON.stringify(user)
-    })
-        .then(res => {
-            if (res.ok) {
-                bootstrap.Modal.getInstance(document.getElementById(`editModal-${id}`)).hide();
-                return fetchUsers().then(() => attachEventListeners());
-            } else {
-                alert("Ошибка при обновлении пользователя");
-            }
-        })
-        .catch(err => console.error("Ошибка обновления:", err));
+    try {
+        const res = await fetch(`/api/users/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('[name="_csrf"]').value
+            },
+            body: JSON.stringify(user)
+        });
+
+        if (!res.ok) {
+            alert("Ошибка при обновлении пользователя");
+            return;
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById(`editModal-${id}`)).hide();
+        await fetchUsers();
+        attachEventListeners();
+    } catch (err) {
+        console.error("Ошибка обновления:", err);
+    }
 }
+
 
 
 function submitDelete(event, id) {
@@ -334,7 +355,8 @@ function submitDelete(event, id) {
         .catch(err => console.error("Ошибка удаления:", err));
 }
 function generateEditModal(user, allRoles = []) {
-    const userRoleIds = (user.roles || []).map(r => r.id);
+    const userRoleIds = user.roleIds || [];
+
 
     const rolesOptions = allRoles.map(role => {
         const selected = userRoleIds.includes(role.id) ? 'selected' : '';
@@ -362,6 +384,11 @@ function generateEditModal(user, allRoles = []) {
                             <div class="mb-3">
                                 <label for="lastName-${user.id}" class="form-label">Last Name</label>
                                 <input type="text" class="form-control" name="lastName" value="${user.lastName}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password-${user.id}" class="form-label">Password</label>
+                                <input type="password" class="form-control" name="password" id="password-${user.id}" placeholder="Enter new password">
+                                <small class="form-text text-muted">Leave blank to keep the current password</small>
                             </div>
                             <div class="mb-3">
                               <label for="roles-${user.id}" class="form-label">Roles</label>

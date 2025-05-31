@@ -17,20 +17,20 @@ public class UserMapper {
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
-        dto.setPassword(null);
-        dto.setRoleIds(user.getRoles().stream()
-                .map(Role::getId)
-                .collect(Collectors.toList()));
-        dto.setRoleIds(user.getRoles().stream()
+
+        dto.setRoleIds(user.getRoles()
+                .stream()
                 .map(Role::getId)
                 .collect(Collectors.toList()));
 
-        dto.setRoleNames(user.getRoles().stream()
+        dto.setRoleNames(user.getRoles()
+                .stream()
                 .map(Role::getName)
                 .collect(Collectors.toList()));
 
         return dto;
     }
+
 
     public User fromDTO(UserDTO dto) {
         User user = new User();
